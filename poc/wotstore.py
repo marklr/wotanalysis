@@ -11,7 +11,7 @@ log = logging.getLogger()
 
 def create_db():
     c = settings.db_conn.cursor()
-    ddl = "create table if not exists matchdata (battlehash text primary key, player_side int, outcome text, mapname text, battletier int, gamemode text, gametype text, player_team_kills int, opfor_team_kills int, "
+    ddl = "create table if not exists matchdata (battlehash text primary key, version text, player_side int, outcome text, mapname text, battletier int, gamemode text, gametype text, player_team_kills int, opfor_team_kills int, "
     x = []
     for t in range(1, 16):
         x.append("player_team_tank_{}".format(t))
@@ -45,6 +45,7 @@ def save_match_data(mdata):
     data = {
         'battlehash': mdata['hash'],
         'player_side': mdata['playerSide'],
+        'version': mdata['replayVersion'],
         'outcome': mdata['outcome'],
         'mapname': mdata['map'],
         'gamemode': mdata['gamemode'],
@@ -120,8 +121,6 @@ def process_file(fname):
         matchData['outcome'] = 'draw'
 
     matchData['hash'] = get_match_hash(details, matchData['map'])
-    log.info("Match outcome: {}".format(matchData['outcome']))
-    log.info("Match hash: {}".format(matchData['hash']))
 
     frags = get_team_frags(players, frags)
     matchData['teams'][1]['kills'] = frags[1]
@@ -135,6 +134,8 @@ def process_file(fname):
     matchData['replayVersion'] = version
     matchData['gametype'] = settings.GAME_TYPES[int(details['common']['bonusType'])]
 
+    log.info("Match hash {}, version {}".format(matchData['hash'], matchData['replayVersion']))
+    log.info("Match outcome: {}".format(matchData['outcome']))
     log.info("Save result: {}".format(save_match_data(matchData)))
 
     os.unlink(decfile)
