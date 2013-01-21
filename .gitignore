@@ -35,4 +35,14 @@ nosetests.xml
 .pydevproject
 
 .svn
-sample_data/
+data
+server
+sample_data
+poc/*.log
+poc/*.log.*
+poc/wot.db
+uploader/Uploader/obj/Debug
+*.pdb
+*.cache
+*.suo
+Uploader.csproj.FileListAbsolute.txt
