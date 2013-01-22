@@ -4,6 +4,7 @@ import sys
 import settings
 import md5
 import logging
+import traceback
 from pprint import pprint
 from wotparse import extract_headers, decompress_file, decrypt_file, extract_version_and_blevel
 
@@ -129,6 +130,8 @@ def process_file(fname):
     decfile = decrypt_file(fname, boff)
     outfile = decompress_file(decfile)
     version, blevel = extract_version_and_blevel(outfile)
+    os.unlink(decfile)
+    os.unlink(outfile)
 
     matchData['battleTier'] = blevel
     matchData['replayVersion'] = version
@@ -136,10 +139,14 @@ def process_file(fname):
 
     log.info("Match hash {}, version {}".format(matchData['hash'], matchData['replayVersion']))
     log.info("Match outcome: {}".format(matchData['outcome']))
-    log.info("Save result: {}".format(save_match_data(matchData)))
 
-    os.unlink(decfile)
-    os.unlink(outfile)
+    try:
+        ret = save_match_data(matchData)
+        log.info("Save result: {}".format(ret))
+    except:
+        log.warn(traceback.format_exc())
+        return False
+
     return True
 
 
@@ -164,10 +171,14 @@ def process_dir(dirname):
     files = glob.glob(dirname + "/*.wotreplay")
     for f in files:
         bf = os.path.basename(f)
-        print "Processing {}".format(bf)
-        if process_file(f):
-            ok_file(f)
-        else:
+        log.info("Processing {}".format(bf))
+        try:
+            if process_file(f):
+                ok_file(f)
+            else:
+                fail_file(f)
+        except:
+            log.warn(traceback.format_exc())
             fail_file(f)
 
 

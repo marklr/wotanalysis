@@ -35,14 +35,14 @@ nosetests.xml
 .pydevproject
 
 .svn
-data
-server
-sample_data
+sample_data/
+data/
+wot-replay-parser
+poc/dump.sh
 poc/*.log
 poc/*.log.*
-poc/wot.db
-uploader/Uploader/obj/Debug
-*.pdb
-*.cache
+server
+uploader/uploader/obj
 *.suo
-Uploader.csproj.FileListAbsolute.txt
+out.txt
+poc/*.sh
