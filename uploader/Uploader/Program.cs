@@ -286,7 +286,7 @@ namespace Uploader
             }
             else
             {
-                Console.WriteLine("[-] You're running the latest version, v{0}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+                Console.WriteLine("[*] You're running the latest version, v{0}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
             }
             Console.WriteLine("".PadRight(50, '-'));
 
