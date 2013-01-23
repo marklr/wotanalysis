@@ -7,6 +7,7 @@ WORK_DIR = "../data/"
 DONE_DIR = WORK_DIR + "/done/"
 FAIL_DIR = WORK_DIR + "/failed/"
 NEW_DIR = WORK_DIR + "/new/"
+INCOMPLETE_DIR = WORK_DIR + "/incomplete/"
 
 BLOWFISH_KEY = ''.join(['\xDE', '\x72', '\xBE', '\xA0', '\xDE', '\x04', '\xBE', '\xB1',
                         '\xDE', '\xFE', '\xBE', '\xEF', '\xDE', '\xAD', '\xBE', '\xEF'])

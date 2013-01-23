@@ -10,6 +10,7 @@ from wotparse import extract_headers, decompress_file, decrypt_file, extract_ver
 
 log = logging.getLogger()
 
+
 def create_db():
     c = settings.db_conn.cursor()
     ddl = "create table if not exists matchdata (battlehash text primary key, version text, player_side int, outcome text, mapname text, battletier int, gamemode text, gametype text, player_team_kills int, opfor_team_kills int, "
@@ -129,7 +130,7 @@ def process_file(fname):
 
     decfile = decrypt_file(fname, boff)
     outfile = decompress_file(decfile)
-    version, blevel = extract_version_and_blevel(outfile)
+    version, blevel, roster = extract_version_and_blevel(outfile)
     os.unlink(decfile)
     os.unlink(outfile)
 
@@ -188,3 +189,4 @@ if __name__ == "__main__":
             process_dir(sys.argv[1])
         elif os.path.isfile(sys.argv[1]):
             process_file(sys.argv[1])
+
