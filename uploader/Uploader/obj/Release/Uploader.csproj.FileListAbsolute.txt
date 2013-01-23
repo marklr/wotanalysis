@@ -1,0 +1,10 @@
+c:\Development\gh\wotanalysis\uploader\Uploader\bin\Release\Uploader.exe.config
+c:\Development\gh\wotanalysis\uploader\Uploader\bin\Release\Uploader.exe
+c:\Development\gh\wotanalysis\uploader\Uploader\bin\Release\Uploader.pdb
+c:\Development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.exe
+c:\Development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.pdb
+c:\development\gh\wotanalysis\uploader\Uploader\bin\Release\Uploader.exe.manifest
+c:\development\gh\wotanalysis\uploader\Uploader\bin\Release\Uploader.application
+c:\development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.exe.manifest
+c:\development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.application
+c:\development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.csprojResolveAssemblyReference.cache
