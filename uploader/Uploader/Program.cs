@@ -5,12 +5,15 @@ using System.Text;
 using System.IO;
 using System.Net;
 using System.Collections.Specialized;
+using System.Reflection;
 
 namespace Uploader
 {
     class Program
     {
         private static String uploadURI = "http://wotapi.doot.ws/index.php";
+        private static String versionURI = "http://wotapi.doot.ws/version.txt";
+
         //private static String uploadURI = "http://localhost/index.php";
 
         private String replayDirectory = "";
@@ -33,6 +36,7 @@ namespace Uploader
             return false;
             
         }
+
         private bool initWatcher()
         {
             if (replayDirectory.Trim().Length == 0) { return false; }
@@ -52,7 +56,7 @@ namespace Uploader
             uploadReplay(e.FullPath);
         }
 
-        private static bool HttpUploadFile(string url, string file, string paramName, string contentType, NameValueCollection nvc)
+        private static bool HttpUploadFile(string url, string file, string paramName, string contentType, NameValueCollection nvc, bool retry)
         {
             Console.WriteLine("Uploading {0} to {1}", file, url);
             string boundary = "---------------------------" + DateTime.Now.Ticks.ToString("x");
@@ -100,7 +104,14 @@ namespace Uploader
                 wresp = wr.GetResponse();
                 Stream stream2 = wresp.GetResponseStream();
                 StreamReader reader2 = new StreamReader(stream2);
-                Console.WriteLine("File uploaded, server response is: {0}", reader2.ReadToEnd());
+                string resp = reader2.ReadToEnd();
+
+                if (resp.StartsWith("FAIL") && !retry)
+                {
+                    Console.WriteLine("Server didn't accept the upload, re-trying once.");
+                    return HttpUploadFile(url, file, paramName, contentType, nvc, true);
+                }
+                Console.WriteLine("File uploaded, server response is: {0}", resp);
                 return true;
             }
             catch (Exception ex)
@@ -120,53 +131,23 @@ namespace Uploader
             }
         }
 
-        private bool processReplay(string file, out byte[] results)
+        private bool isReplayComplete(string file)
         {
-            byte[] ret = null;
             try
             {
-                FileStream fs = File.OpenRead(file);
-                BinaryReader br = new BinaryReader(fs);
-
-                fs.Seek(4, SeekOrigin.Begin); // Skip magic number
-                int blocks = br.ReadInt32();
-                
-                if (blocks == 3)
+                using(FileStream fs = File.OpenRead(file))
                 {
-                    Console.WriteLine("Loading chunks, {0} blocks found", blocks);
-
-                    blocks = br.ReadInt32();
-                    Console.WriteLine("Players chunk length {0}", blocks);
-                    fs.Seek(blocks, SeekOrigin.Current);
-
-                    blocks = br.ReadInt32();
-                    Console.WriteLine("Frags chunk length {0}", blocks);
-                    fs.Seek(blocks, SeekOrigin.Current);
-
-                    blocks = br.ReadInt32();
-                    Console.WriteLine("Details pickle length {0}", blocks);
-
-                    int offset = (int)fs.Position;
-                    fs.Seek(4, SeekOrigin.Begin);
-                    ret = br.ReadBytes(offset);  // include the block count, too
+                    using(BinaryReader br = new BinaryReader(fs))
+                    {
+                        fs.Seek(4, SeekOrigin.Begin); // Skip magic number
+                        int blocks = br.ReadInt32();
+                        return (blocks == 3);
+                    }
                 }
-                else
-                {
-                    Console.WriteLine("Insufficient blocks");
-                }
-
-                br.Close();
-
-                return true;
-            }
-            catch
-            {
-                return false;
-            }
-            finally
-            {
-                results = ret;
-            }
+             } catch(Exception e) {
+                 Console.WriteLine("Couldn't determine if replay is complete: ", e.Message);
+                 return false;
+             }
         }
 
         private DateTime getLastUploadTime()
@@ -239,7 +220,7 @@ namespace Uploader
             try
             {
                 
-                if (HttpUploadFile(uploadURI, file, "file", "application/octet-stream", nvc))
+                if (HttpUploadFile(uploadURI, file, "file", "application/octet-stream", nvc, false))
                 {
                     saveLastUploadTimestamp(File.GetCreationTime(file).AddSeconds(1));
                 }
@@ -257,9 +238,59 @@ namespace Uploader
             
         }
 
+        private string checkForUpdate()
+        {
+            HttpWebRequest wr = null;
+            WebResponse response = null;
+            StreamReader sr = null;
+            try
+            {
+                Version v = Assembly.GetExecutingAssembly().GetName().Version;
+                wr  = (HttpWebRequest)WebRequest.Create(versionURI);
+                response = (WebResponse)wr.GetResponse();
+                using (Stream s = response.GetResponseStream())
+                {
+                    sr = new StreamReader(s);
+                    Version nv = new Version(sr.ReadToEnd());
+                    if (v.CompareTo(nv) < 0)
+                    {
+                        return nv.ToString(); // newer version detected.
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("Couldn't check for a newer version");
+                return null;
+            }
+            finally
+            {
+                response.Close();
+                sr.Close();
+            }
+
+            return null;
+        }
+
         static void Main(string[] args)
         {
             Program p = new Program();
+
+            Console.WriteLine("[*] WOT Uploader v{0} starting up", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            Console.WriteLine("[*] For more information, see http://wotmystats.blogspot.com");
+            Console.WriteLine("[*] Checking for updates...");
+            string newVersion = p.checkForUpdate();
+            if (newVersion != null)
+            {
+                Console.WriteLine("[+] A newer version ({0}) is available, please see the website for more details", newVersion);
+            }
+            else
+            {
+                Console.WriteLine("[-] You're running the latest version, v{0}", Assembly.GetExecutingAssembly().GetName().Version.ToString());
+            }
+            Console.WriteLine("".PadRight(50, '-'));
+
+            
             if (args.Length > 1)
             {
                 if (File.Exists(args[1]) && FileAttributes.Normal == (File.GetAttributes(args[1]) & FileAttributes.Normal))
