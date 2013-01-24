@@ -189,6 +189,8 @@ namespace Uploader
         {
             string[] files = Directory.GetFiles(replayDirectory, "*.wotreplay");
             Console.WriteLine("Found {0} replay files", files.Length);
+            DateTime newestFile = DateTime.MinValue;
+
             foreach (string f in files)
             {
                 if (FileAttributes.Directory == (File.GetAttributes(f) & FileAttributes.Directory))
@@ -197,16 +199,21 @@ namespace Uploader
                 }
 
                 DateTime lastUpload = getLastUploadTime();
-                if (File.GetCreationTime(f) > lastUpload && f.StartsWith("temp") == false)
+                DateTime fileDate = File.GetCreationTime(f);
+                if (fileDate > lastUpload && f.StartsWith("temp") == false)
                 {
-                    uploadReplay(f);
+                    if (uploadReplay(f) && (newestFile == DateTime.MinValue || fileDate > newestFile))
+                    {
+                        newestFile = fileDate;
+                    }
+                    
                 }
                 else
                 {
                     Console.WriteLine("Skipping {0}", Path.GetFileName(f));
                 }
             }
-
+            saveLastUploadTimestamp(newestFile.AddSeconds(1));
         }
 
         public void setAndMonitorReplayDirectory(string s)
@@ -218,8 +225,10 @@ namespace Uploader
             }
             else
             {
-                Console.WriteLine("Waiting for new replays to show up, hit ctrl+c to abort.");
                 processReplayDirectory();
+                Console.WriteLine("".PadRight(50, '-'));
+                Console.WriteLine("Waiting for new replays to show up, hit ctrl+c to abort.");
+                Console.WriteLine("".PadRight(50, '-'));
                 while (true)
                 {
                     watcher.WaitForChanged(WatcherChangeTypes.All);
@@ -227,34 +236,34 @@ namespace Uploader
             }
         }
 
-        private void uploadReplay(string file)
+        private bool uploadReplay(string file)
         {
             if (file.StartsWith("temp"))
             {
-                return;
+                return false;
             }
 
             // We'll maybe use this later.
             NameValueCollection nvc = new NameValueCollection();
             try
             {
-
-                if (HttpUploadFile(uploadURI, file, "file", "application/octet-stream", nvc, false))
-                {
-                    saveLastUploadTimestamp(File.GetCreationTime(file).AddSeconds(1));
-                }
+                return (HttpUploadFile(uploadURI, file, "file", "application/octet-stream", nvc, false));
             }
             catch (System.Net.WebException ex)
             {
-                Console.WriteLine("Couldn't upload {} - are you online?", file);
+                Console.WriteLine("Couldn't upload {0} - are you online?", file);
                 //Console.WriteLine(ex.ToString());
             }
             catch (System.IO.IOException ex)
             {
-                Console.WriteLine("Couldn't upload {} - is it in use?", file);
+                Console.WriteLine("Couldn't upload {0} - is it in use?", file);
                 //Console.WriteLine(ex.ToString());
             }
-
+            catch (Exception ex)
+            {
+                Console.WriteLine("Couldn't upload: {0}", ex.ToString());
+            }
+            return false;
         }
 
         private string checkForUpdate()
