@@ -3,7 +3,7 @@
   <asmv1:assemblyIdentity name="Uploader.exe" version="1.0.0.1" publicKeyToken="0000000000000000" language="neutral" processorArchitecture="msil" type="win32" />
   <application />
   <entryPoint>
-    <assemblyIdentity name="Uploader" version="1.0.8.3" language="neutral" processorArchitecture="msil" />
+    <assemblyIdentity name="Uploader" version="1.0.8.4" language="neutral" processorArchitecture="msil" />
     <commandLine file="Uploader.exe" parameters="" />
   </entryPoint>
   <trustInfo>
@@ -43,13 +43,13 @@
   </dependency>
   <dependency>
     <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="Uploader.exe" size="11776">
-      <assemblyIdentity name="Uploader" version="1.0.8.3" language="neutral" processorArchitecture="msil" />
+      <assemblyIdentity name="Uploader" version="1.0.8.4" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha1" />
-        <dsig:DigestValue>D6GW3+2+vVC9OWXSEOdzfTZruwU=</dsig:DigestValue>
+        <dsig:DigestValue>sctnSQjXO+dZn1/QBMeAzK+hT4o=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>

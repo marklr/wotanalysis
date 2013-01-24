@@ -8,3 +8,13 @@ c:\development\gh\wotanalysis\uploader\Uploader\bin\Release\Uploader.application
 c:\development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.exe.manifest
 c:\development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.application
 c:\development\gh\wotanalysis\uploader\Uploader\obj\Release\Uploader.csprojResolveAssemblyReference.cache
+E:\Development\github\wotanalysis\uploader\Uploader\bin\Release\Uploader.exe.config
+E:\Development\github\wotanalysis\uploader\Uploader\obj\Release\Uploader.exe
+E:\Development\github\wotanalysis\uploader\Uploader\obj\Release\Uploader.pdb
+E:\Development\github\wotanalysis\uploader\Uploader\obj\Release\Uploader.csprojResolveAssemblyReference.cache
+E:\Development\github\wotanalysis\uploader\Uploader\bin\Release\Uploader.exe.manifest
+E:\Development\github\wotanalysis\uploader\Uploader\bin\Release\Uploader.application
+E:\Development\github\wotanalysis\uploader\Uploader\bin\Release\Uploader.exe
+E:\Development\github\wotanalysis\uploader\Uploader\bin\Release\Uploader.pdb
+E:\Development\github\wotanalysis\uploader\Uploader\obj\Release\Uploader.exe.manifest
+E:\Development\github\wotanalysis\uploader\Uploader\obj\Release\Uploader.application
