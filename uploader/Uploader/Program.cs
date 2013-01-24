@@ -321,12 +321,12 @@ namespace Uploader
                 {
                         p.uploadReplay(args[1]);
                 }
-                else
+            }
+            else
+            {
+                if (p.findReplayDirectory() == false)
                 {
-                    if (p.findReplayDirectory() == false)
-                    {
-                        Console.Write("No replays/directories to process");
-                    }
+                    Console.Write("No replays/directories to process");
                 }
             }
         }
