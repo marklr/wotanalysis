@@ -314,14 +314,12 @@ namespace Uploader
             {
                 if (Directory.Exists(args[1]) && FileAttributes.Directory == (File.GetAttributes(args[1]) & FileAttributes.Directory))
                 {
-                    p.uploadReplay(args[1]);
+                    Console.WriteLine("Setting replay directory to {0}", args[1]);
+                    p.setAndMonitorReplayDirectory(args[1]); 
                 }
                 else if (File.Exists(args[1]))
                 {
-                    {
-                        Console.WriteLine("Setting replay directory to {0}", args[1]);
-                        p.setAndMonitorReplayDirectory(args[1]);
-                    }
+                        p.uploadReplay(args[1]);
                 }
                 else
                 {
