@@ -2,6 +2,7 @@
 # http://archive.wotreplays.ru/parser.py.txt
 # http://blog.wot-replays.org/
 # https://raw.github.com/raszpl/wotrepparser/master/wotrepparser.py
+# https://github.com/raszpl/wotdecoder/blob/master/wotdecoder.py
 
 import logging
 import struct
@@ -14,6 +15,7 @@ import zlib
 import glob
 
 from blowfish import Blowfish
+from binascii import b2a_hex
 from pprint import pprint
 import cPickle as pickle
 import settings
@@ -21,15 +23,35 @@ import settings
 log = logging.getLogger()
 
 
+# From https://github.com/raszpl/wotdecoder/blob/master/wotdecoder.py
+def decode_details(data):
+    detail = [
+        "spotted",
+        "killed",
+        "hits",
+        "he_hits",
+        "pierced",
+        "damageDealt",
+        "damageAssisted",
+        "crits",
+        "fire"
+    ]
+    details = {}
+
+    binlen = len(data) // 22
+    for x in range(0, binlen):
+        offset = 4*binlen + x*18
+        vehic = struct.unpack('i', data[x*4:x*4+4].encode('raw_unicode_escape'))[0]
+        detail_values = struct.unpack('hhhhhhhhh', data[offset:offset + 18])
+        details[vehic] = dict(zip(detail, detail_values))
+    return details
+
 def extract_headers(fn):
     """
     Extracts and returns a tuple of the following data structures, plus the offset of the compress archive stream
     * players
     * frags
     * detailed battle results
-
-    TODO:
-    * Figure out what the "details" key means
     """
     try:
         with open(fn, "rb") as f:
@@ -51,6 +73,9 @@ def extract_headers(fn):
                 bs = struct.unpack("i", f.read(4))[0]
                 try:
                     results = pickle.loads(f.read(bs))
+                    for k, v in results['vehicles'].items():
+                        results['vehicles'][k]['details'] = decode_details(v['details'])
+
                     log.info("Loaded battle results, {} bytes".format(bs))
                 except pickle.UnpicklingError as e:
                     log.warn("Could not load battle results")
@@ -58,9 +83,7 @@ def extract_headers(fn):
                     return None, None, None, None
 
                 return players, frags, results, f.tell()
-    except EOFError:
-        log.warn("Could not read file {}".format(fn))
-    except IOError:
+    except (EOFError, IOError):
         log.warn("Could not read file {}".format(fn))
     except ValueError as e:
         log.warn("Error: " + str(e))
@@ -89,7 +112,7 @@ def decrypt_file(fn, offset=0):
                 if bc > 0:
                     db = bf.decrypt(b)
                     if pb:
-                        db = ''.join([chr(ord(a) ^ ord(b)) for a, b in zip(db, pb)])
+                        db = ''.join([chr(int(b2a_hex(a), 16) ^ int(b2a_hex(b), 16)) for a, b in zip(db, pb)])
 
                     pb = db
                     out.write(db)
@@ -124,6 +147,34 @@ def extract_roster(f):
             pass
     log.info("Didn't find roster")
     return None
+
+
+def extract_vehicle_data(rosterEntry):
+    """
+    Takes a tuple from the roster data.
+    Parsing is based on information from http://blog.wot-replays.org/2012/07/replay-file-secrets-2-some-match-start.html
+    """
+    if len(rosterEntry) < 2:
+        return None
+
+    vdata = rosterEntry[1]
+    ret = {}
+
+    ret['country'] = settings.VEHICLE_TYPES.get(b2a_hex(vdata[0]), "N/A")
+    ret['tank_id'] = b2a_hex(vdata[1])
+    ret['tracks_id'] = b2a_hex(vdata[2])
+    ret['engine_id'] = b2a_hex(vdata[4])
+    ret['fueltank_id'] = b2a_hex(vdata[6])
+    ret['radio_id'] = b2a_hex(vdata[8])
+    ret['turret_id'] = b2a_hex(vdata[10])
+    ret['gun_id'] = b2a_hex(vdata[12])
+
+    if len(vdata) >= 20:
+        ret['module_1_id'] = vdata[15]
+        ret['module_2_id'] = vdata[17]
+        ret['module_3_id'] = vdata[19]
+
+    return ret
 
 
 def extract_version_and_blevel(fn):
@@ -207,6 +258,8 @@ if __name__ == "__main__":
                 print "Match details"
                 print "-" * 80
                 pprint(details)
+
+                print "-" * 80
 
                 print ""
                 print "Extra roster data (not always present)"
