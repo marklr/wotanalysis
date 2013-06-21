@@ -21,6 +21,16 @@ GAME_TYPES = {
     5: "CW",
 }
 
+
+VEHICLE_TYPES = {
+    '01': "USSR",
+    '11': "Germany",
+    '21': "USA",
+    '31': "China",
+    '41': "France",
+    '51': "UK",
+}
+
 ## Database
 SQLITE_DB = os.path.abspath(os.path.dirname(__file__)) + "/wot.db"
 
