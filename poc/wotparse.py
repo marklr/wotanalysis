@@ -39,11 +39,14 @@ def decode_details(data):
     details = {}
 
     binlen = len(data) // 22
-    for x in range(0, binlen):
-        offset = 4*binlen + x*18
-        vehic = struct.unpack('i', data[x*4:x*4+4].encode('raw_unicode_escape'))[0]
-        detail_values = struct.unpack('hhhhhhhhh', data[offset:offset + 18])
-        details[vehic] = dict(zip(detail, detail_values))
+    try:
+        for x in range(0, binlen):
+            offset = 4*binlen + x*18
+            vehic = struct.unpack('i', data[x*4:x*4+4])[0]
+            detail_values = struct.unpack('hhhhhhhhh', data[offset:offset + 18])
+            details[vehic] = dict(zip(detail, detail_values))
+    except Exception:
+        print traceback.format_exc()
     return details
 
 def extract_headers(fn):
@@ -67,6 +70,7 @@ def extract_headers(fn):
                 log.info("Loaded player data, {} bytes".format(bs))
 
                 bs = struct.unpack("i", f.read(4))[0]
+
                 frags = json.loads(f.read(bs).decode('utf-8'))
                 log.info("Loaded frag data, {} bytes".format(bs))
 
@@ -184,8 +188,11 @@ def extract_version_and_blevel(fn):
             f.seek(12, 0)
             bs = struct.unpack("i", f.read(4))[0]
             version = f.read(bs)
-            x = re.match("^World.*?of.*?Tanks v\.(\d+)\.(\d+)\.(\d+)\s#(\d+)", version.replace('\xc2\xa0', ' '))
-            version = '.'.join(x.groups()[:-1]) + ' ' + x.groups()[-1]
+            try:
+                x = re.match("^World.*?of.*?Tanks v\.(\d+)\.(\d+)\.(\d+)\s#(\d+)", version.replace('\xc2\xa0', ' '))
+                version = '.'.join(x.groups()[:-1]) + ' ' + x.groups()[-1]
+            except Exception:  # must be 8.6
+                version = version.replace(', ', '.')
             log.info("Replay version {}".format(version))
 
             f.seek(35, 1)
