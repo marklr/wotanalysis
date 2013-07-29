@@ -31,6 +31,10 @@ VEHICLE_TYPES = {
     '51': "UK",
 }
 
+#Needed for decoding crits in details
+VEHICLE_DEVICE_TYPE_NAMES = ('engine', 'ammoBay', 'fuelTank', 'radio', 'track', 'gun', 'turretRotator', 'surveyingDevice')
+VEHICLE_TANKMAN_TYPE_NAMES = ('commander', 'driver', 'radioman', 'gunner', 'loader')
+
 ## Database
 SQLITE_DB = os.path.abspath(os.path.dirname(__file__)) + "/wot.db"
 
