@@ -49,6 +49,46 @@ def decode_details(data):
         print traceback.format_exc()
     return details
 
+# Phalynx, vBAddict.net    
+def decode_crits(details_data):
+    """
+    Decodes the crits introduced in 0.8.6.0
+    Refer also to http://wiki.vbaddict.net/pages/Crits
+    """
+    for vehicleid, detail_values in details_data.items():
+
+		if detail_values['crits']>0:
+			destroyedTankmen = detail_values['crits'] >> 24 & 255
+			destroyedDevices = detail_values['crits'] >> 12 & 4095
+			criticalDevices = detail_values['crits'] & 4095
+			critsCount = 0
+			
+			criticalDevicesList = []
+			destroyedDevicesList = []
+			destroyedTankmenList = []
+			
+			for shift in range(len(VEHICLE_DEVICE_TYPE_NAMES)):
+				if 1 << shift & criticalDevices:
+					critsCount += 1
+					criticalDevicesList.append(VEHICLE_DEVICE_TYPE_NAMES[shift])
+			
+				if 1 << shift & destroyedDevices:
+					critsCount += 1
+					destroyedDevicesList.append(VEHICLE_DEVICE_TYPE_NAMES[shift])
+			
+			for shift in range(len(VEHICLE_TANKMAN_TYPE_NAMES)):
+				if 1 << shift & destroyedTankmen:
+					critsCount += 1
+					destroyedTankmenList.append(VEHICLE_TANKMAN_TYPE_NAMES[shift])
+	
+			details_data[vehicleid]['critsCount'] = critsCount
+			details_data[vehicleid]['critsDestroyedTankmenList'] = destroyedTankmenList
+			details_data[vehicleid]['critsCriticalDevicesList'] = criticalDevicesList
+			details_data[vehicleid]['critsDestroyedDevicesList'] = destroyedDevicesList
+		
+	return details_data
+
+
 def extract_headers(fn):
     """
     Extracts and returns a tuple of the following data structures, plus the offset of the compress archive stream
@@ -79,6 +119,7 @@ def extract_headers(fn):
                     results = pickle.loads(f.read(bs))
                     for k, v in results['vehicles'].items():
                         results['vehicles'][k]['details'] = decode_details(v['details'])
+                        results['vehicles'][k]['details'] = decode_crits(v['details'])
 
                     log.info("Loaded battle results, {} bytes".format(bs))
                 except pickle.UnpicklingError as e:
