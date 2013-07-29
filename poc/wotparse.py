@@ -26,24 +26,26 @@ log = logging.getLogger()
 # From https://github.com/raszpl/wotdecoder/blob/master/wotdecoder.py
 def decode_details(data):
     detail = [
-        "spotted",
-        "killed",
-        "hits",
-        "he_hits",
-        "pierced",
-        "damageDealt",
-        "damageAssisted",
-        "crits",
-        "fire"
+      "spotted",
+      "deathReason",
+      "hits",
+      "he_hits",
+      "pierced",
+      "damageDealt",
+      "damageAssistedTrack",
+      "damageAssistedRadio",
+      "crits",
+      "fire"
     ]
     details = {}
 
     binlen = len(data) // 22
+    datalen = 20
     try:
         for x in range(0, binlen):
-            offset = 4*binlen + x*18
+            offset = 4*binlen + x*datalen
             vehic = struct.unpack('i', data[x*4:x*4+4])[0]
-            detail_values = struct.unpack('hhhhhhhhh', data[offset:offset + 18])
+            detail_values = struct.unpack('<BbHHHHHHIH', data[offset:offset + datalen])
             details[vehic] = dict(zip(detail, detail_values))
     except Exception:
         print traceback.format_exc()
