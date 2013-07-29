@@ -119,6 +119,8 @@ def extract_headers(fn):
                 bs = struct.unpack("i", f.read(4))[0]
                 try:
                     results = pickle.loads(f.read(bs))
+										results['personal']['details'] = decode_crits(results['personal']['details'])
+
                     for k, v in results['vehicles'].items():
                         results['vehicles'][k]['details'] = decode_details(v['details'])
                         results['vehicles'][k]['details'] = decode_crits(v['details'])
